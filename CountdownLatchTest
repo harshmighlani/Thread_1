@@ -1,0 +1,72 @@
+
+import java.util.concurrent.CountDownLatch;
+
+public class CountdownLatchTest {
+
+	public static void main(String[] args) throws InterruptedException {
+		
+		CountDownLatch latch = new CountDownLatch(3);
+
+		Waiter  waiter = new Waiter(latch);
+		Decrementer decrementer = new Decrementer(latch);
+
+		new Thread(waiter).start();
+		new Thread(decrementer).start();
+
+		Thread.sleep(4000);
+	}
+}
+
+
+class Waiter implements Runnable
+{
+	CountDownLatch latch = null;
+	
+	public Waiter(CountDownLatch latch) {
+        this.latch = latch;
+    }
+	
+	@Override
+	public void run() {
+		try {
+			System.out.println("running waiter");
+			latch.await();
+			System.out.println(this.latch.getCount());
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		 System.out.println("Waiter Released");
+	}
+	
+}
+
+class Decrementer implements Runnable
+{
+	CountDownLatch latch = null;
+
+	public Decrementer(CountDownLatch latch) {
+		this.latch = latch;
+	}
+	@Override
+	public void run() {
+		try {
+			System.out.println("running decrementer");
+			System.out.println(this.latch.getCount());
+			this.latch.countDown();
+			Thread.sleep(5000);
+			System.out.println(this.latch.getCount());
+			this.latch.countDown();
+			Thread.sleep(5000);
+			System.out.println(this.latch.getCount());
+			this.latch.countDown();
+			Thread.sleep(5000);
+			System.out.println(this.latch.getCount());
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+}
