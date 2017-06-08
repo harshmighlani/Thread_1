@@ -1,0 +1,83 @@
+package sapient;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+public class MatrixCal {
+
+	public static void main(String[] args) throws InterruptedException, ExecutionException {
+
+		int totalSum = 0;
+		int[][] matrix = new int[3][3];
+
+		for (int a = 0; a < matrix.length; a++) {
+			for (int b = 0; b < matrix[0].length; b++) {
+				matrix[a][b] = 4 + (a * 2 + b * 3);
+			}
+		}
+
+		ExecutorService executor = Executors
+				.newFixedThreadPool(matrix[0].length);
+		List<Callable<Integer>> worker = new ArrayList<Callable<Integer>>();
+		List<Future> futureList = new ArrayList<Future>();
+		for (int i = 0; i < matrix.length; i++)
+			try {
+				worker.add(new WorkerThread(i, matrix));
+				Future<Integer> future = executor.submit(worker.get(i));
+				System.out.println("totalSumFor Row" + future.get());
+				
+				futureList.add(future);
+
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		executor.shutdown();
+		while (!executor.isTerminated()) {
+			
+		}
+		for(Future future:futureList)
+		{
+			totalSum=totalSum+ (Integer)(future.get());
+			System.out.println(future.get());
+		}
+		System.out.println("Finished all threads" + totalSum);
+	}
+
+}
+
+class WorkerThread implements Callable<Integer> {
+
+	int rowCount;
+	int[][] matrix;
+
+	WorkerThread(int rowCount, int[][] matrix) {
+		this.rowCount = rowCount;
+		this.matrix = matrix;
+	}
+
+	@Override
+	public Integer call() throws Exception {
+		return calculateSum();
+
+	}
+
+	private int calculateSum() {
+		System.out.println("Running thread for row " + rowCount);
+		int sum = 0;
+		int col = matrix[0].length;
+		System.out.println("running for " + rowCount);
+
+		for (int i = 0; i < col; i++) {
+			System.out.println(matrix[rowCount][i]);
+			sum += matrix[rowCount][i];
+		}
+		return sum;
+	}
+
+}
